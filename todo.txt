@@ -6,3 +6,5 @@ in my bot for !song
     it from code and the hardest way would be to use a headless
     browser from python and literally imitatate a user logging
     in, but I'm just guessing at this point
+
+2. Possibly need to fix some of the !followage command
