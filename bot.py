@@ -4,9 +4,14 @@ import os # for importing env vars for the bot to use
 import requests
 import json
 import re
+import spotipy
+from spotipy.oauth2 import SpotifyOAuth
 from datetime import date
 from datetime import datetime
 from twitchio.ext import commands
+
+
+sp = None
 
 bot = commands.Bot(
     # set up the bot
@@ -57,12 +62,19 @@ async def followage(ctx):
     otherusers = await bot.get_users(ctx.content.split(" ")[1])
     followage = await bot.get_follow(otherusers[0].id, '29998625')
     converted = datetime.fromisoformat(followage['followed_at'][:-1])
-    currtime = datetime.today()
+    currtime = datetime.utcnow()
     result = currtime - converted
+    print(result)
     numyears = result.days//365
     numdays = result.days % 365
+   # print(dir(result))
+   # print(result.total_seconds())
 
-    if numyears < 1:
+    if numyears < 1 and numdays < 1 and result.total_seconds()//60//60 < 1:
+        await ctx.send(f'{otherusers[0].display_name} has been following for {int(result.total_seconds()//60)} minutes.')
+    elif numyears < 1 and numdays < 1:
+        await ctx.send(f'{otherusers[0].display_name} has been following for {int(result.total_seconds()//60//60)} hours.')
+    elif numyears < 1:
         await ctx.send(f'{otherusers[0].display_name} has been following for {numdays} days.')
     elif numyears == 1:
         await ctx.send(f'{otherusers[0].display_name} has been following for a year and {numdays} days.')
@@ -85,19 +97,22 @@ async def unslow(ctx):
     else:
         await ctx.unslow()
 
-#@bot.command(name='song')
-#async def song(ctx):
+@bot.command(name='song')
+async def song(ctx):
 
-    # headers = {
-    # 'Accept': 'application/json',
-    # 'Content-Type': 'application/json',
-    # 'Authorization': 'Bearer ' + str(os.environ['SPOTIFY_TOKEN']),
-    # }
+   # headers = {
+   # 'Accept': 'application/json',
+   # 'Content-Type': 'application/json',
+   # 'Authorization': 'Bearer ' + str(os.environ['SPOTIFY_TOKEN']),
+   # }
 
-    # response = requests.get('https://api.spotify.com/v1/me/player/currently-playing', headers=headers)
-    # print(response)
-    # song = response.json()['item']['name']
-    # artists = ", ".join([x['name'] for x in response.json()['item']['artists']])
+    #response = requests.get('https://api.spotify.com/v1/me/player/currently-playing', headers=headers)
+    #print(response)
+    #song = response.json()['item']['name']
+    #artists = ", ".join([x['name'] for x in response.json()['item']['artists']])
+
+    result = sp.currently_playing()
+    for items in result['items']:
 
     #await ctx.send(f'Artist: {artists} | Title: {song}')
     #The way I got this to work before was to grab client secret
@@ -105,7 +120,22 @@ async def unslow(ctx):
 
 def main():
 
+    global sp
+    sp = spotipyinit()
     bot.run()
+
+def spotipyinit():
+
+    CLIENT=os.environ['SPOTIPY_CLIENT_ID']
+    SECRET=os.environ['SPOTIPY_CLIENT_SECRET']
+    REDIRECT=os.environ['SPOTIPY_REDIRECT_URI']
+    USERNAME=os.environ['SPOTIPY_USERNAME']
+
+    scope = 'user-read-currently-playing'
+
+    sp = spotipy.Spotify(auth_manager=SpotifyOAuth(username=USERNAME, client_id=CLIENT, client_secret=SECRET, redirect_uri=REDIRECT, scope=scope))
+
+    return sp
 
 if __name__ == '__main__':
     exit(main())
