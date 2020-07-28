@@ -1,10 +1,2 @@
-1. We need figure out a way to get spotify's authorization flow to work
-in my bot for !song
-    FallDownTS: I can think of a few things, it might not require
-    authorization if you're already logged in, there might be a
-    way to send the login info programatically so you could do
-    it from code and the hardest way would be to use a headless
-    browser from python and literally imitatate a user logging
-    in, but I'm just guessing at this point
-
-2. Possibly need to fix some of the !followage command
+1. Fix !followage command for '@' and possibly other single characters~~
+        'AndrewLaneX: Put the replace when you assign part'
