@@ -62,37 +62,48 @@ class Bot(commands.Bot):
         part = ctx.content.partition(' ')[2].replace('@', '')
         if part == '':
             followage = await self.get_follow(ctx.author.id, '29998625')
-            otherusers = [ctx.author]
+            users = [ctx.author]
         else:
-            otherusers = await self.get_users(part)
-            followage = await self.get_follow(otherusers[0].id, '29998625')
-        # print(followage['followed_at'])
-        if followage is None:
-            await ctx.send(f'{otherusers[0].display_name} isn\'t \
-            following the channel!')
-            return
-        else:
-            converted = datetime.fromisoformat(followage['followed_at'][:-1])
+            users = await self.get_users(part)
+            if users:
+                followage = await self.get_follow(users[0].id, '29998625')
+            else:
+                await ctx.send(f'{part} isn\'t following the channel!')
+                return
+
+        converted = datetime.fromisoformat(followage['followed_at'][:-1])
         currtime = datetime.utcnow()
         result = currtime - converted
         numyears = result.days//365
         numdays = result.days % 365
 
         if numyears < 1 and numdays < 1 and result.total_seconds()//60//60 < 1:
-            await ctx.send(f'{otherusers[0].display_name} has \
-            been following for {int(result.total_seconds()//60)} minutes.')
+            await ctx.send(
+                f'{users[0].display_name} has '
+                f'been following for {int(result.total_seconds()//60)} '
+                f'minutes.',
+            )
         elif numyears < 1 and numdays < 1:
-            await ctx.send(f'{otherusers[0].display_name} has \
-            been following for {int(result.total_seconds()//60//60)} hours.')
+            await ctx.send(
+                f'{users[0].display_name} has '
+                f'been following for {int(result.total_seconds()//60//60)} '
+                f'hours.',
+            )
         elif numyears < 1:
-            await ctx.send(f'{otherusers[0].display_name} has \
-            been following for {numdays} days.')
+            await ctx.send(
+                f'{users[0].display_name} has '
+                f'been following for {numdays} days.',
+            )
         elif numyears == 1:
-            await ctx.send(f'{otherusers[0].display_name} has \
-            been following for a year and {numdays} days.')
+            await ctx.send(
+                f'{users[0].display_name} has '
+                f'been following for a year and {numdays} days.',
+            )
         elif numyears > 1:
-            await ctx.send(f'{otherusers[0].display_name} has \
-            been following for {numyears} years and {numdays} days.')
+            await ctx.send(
+                f'{users[0].display_name} has '
+                f'been following for {numyears} years and {numdays} days.',
+            )
 
     @commands.command(name='slow')
     async def slow(self, ctx):
@@ -134,7 +145,6 @@ class Bot(commands.Bot):
     async def title(self, ctx):
         if ctx.author.is_mod:
             async with httpx.AsyncClient() as client:
-
                 headers = {
                     'Authorization': 'Bearer ' + os.environ['OAUTH'],
                     'client-id': os.environ['EDITOR_ID'],
@@ -150,11 +160,16 @@ class Bot(commands.Bot):
     @commands.command(name='nextsong')
     async def nextsong(self, ctx):
         starttime = perf_counter()
-        if ctx.content == '!nextsong':
-            self.counter += 1
+        self.counter += 1
         while self.counter >= 2 and perf_counter()-starttime <= 5:
             self.sp.next_track()
             self.counter = 0
+
+    @commands.command(name='playlist')
+    async def playlist(self, ctx):
+        currplaylist = self.sp.current_user_playlists(1, 0)
+        playlisturl = currplaylist['items'][0]['external_urls']['spotify']
+        await ctx.send(f'Playlist: {playlisturl}')
 
 
 def main():
@@ -170,7 +185,8 @@ def spotipyinit():
     REDIRECT = os.environ['SPOTIPY_REDIRECT_URI']
     USERNAME = os.environ['SPOTIPY_USERNAME']
 
-    scope = 'user-read-currently-playing, user-modify-playback-state'
+    scope = 'user-read-currently-playing, user-modify-playback-state, \
+    playlist-read-collaborative'
 
     sp = spotipy.Spotify(
         auth_manager=SpotifyOAuth(
