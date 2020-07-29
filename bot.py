@@ -176,10 +176,13 @@ class Bot(commands.Bot):
     async def motd(self, ctx):
         if ctx.content.partition(' ')[2]:
             self.motd = ctx.content.partition(' ')[2]
-            await ctx.send(f'{ctx.author} has set the !motd as '
-            f'{self.motd}')
+            await ctx.send(
+                f'{ctx.author} has set the !motd as '
+                f'{self.motd}',
+            )
         else:
             await ctx.send(f'{self.motd}')
+
 
 def main():
     # change this global variable to something else
