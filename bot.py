@@ -24,6 +24,7 @@ class Bot(commands.Bot):
         )
         self.sp = spotipyinit()
         self.counter = 0
+        self.motd = ''
 
     # bot.py, below bot objects
 
@@ -171,6 +172,14 @@ class Bot(commands.Bot):
         playlisturl = currplaylist['items'][0]['external_urls']['spotify']
         await ctx.send(f'Playlist: {playlisturl}')
 
+    @commands.command(name='motd')
+    async def motd(self, ctx):
+        if ctx.content.partition(' ')[2]:
+            self.motd = ctx.content.partition(' ')[2]
+            await ctx.send(f'{ctx.author} has set the !motd as '
+            f'{self.motd}')
+        else:
+            await ctx.send(f'{self.motd}')
 
 def main():
     # change this global variable to something else
