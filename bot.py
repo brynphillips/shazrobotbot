@@ -1,12 +1,10 @@
 # this is a bot
 # import os  # for importing env vars for the bot to use
-import os
 import inspect
-import json
-import logging
 import logging.config
-from logging.handlers import RotatingFileHandler
+import os
 from datetime import datetime
+from logging.handlers import RotatingFileHandler
 from time import perf_counter
 
 import httpx
@@ -61,7 +59,7 @@ class Bot(commands.Bot):
         commands_list = list(inspect.getmembers(self)[2][1]['commands'].keys())
         commands_mod = ['so', 'slow', 'unslow']
         commands_semifinal = list(set(commands_list) - set(commands_mod))
-        commands_final = ", ".join(commands_semifinal)
+        commands_final = ', '.join(commands_semifinal)
         self.logger.info(f'{ctx.author.display_name} used the command.')
         await ctx.send(f'Commands: {commands_final}')
 
@@ -173,8 +171,10 @@ class Bot(commands.Bot):
     async def uptime(self, ctx):
         self.logger.info(f'{ctx.author.display_name} used the command.')
         uptime = await self.get_stream(self.id)
-        timedelta = (datetime.utcnow()
-        - datetime.fromisoformat(uptime['started_at'][:-1]))
+        timedelta = (
+            datetime.utcnow()
+            - datetime.fromisoformat(uptime['started_at'][:-1])
+        )
         total_seconds = timedelta.total_seconds()
         hours = total_seconds//60//60
         if total_seconds//60//60 >= 1:
@@ -192,7 +192,7 @@ class Bot(commands.Bot):
     @commands.command(name='followers')
     async def followers(self, ctx):
         self.logger.info(f'{ctx.author.display_name} used the command.')
-        followers = await self.get_followers(self.id, count = True)
+        followers = await self.get_followers(self.id, count=True)
         await ctx.send(f'{self.name} has {followers} number of follows!')
 
 # Spotify commands
@@ -237,10 +237,12 @@ class Bot(commands.Bot):
 
 def main():
 
-    #logging.config.fileConfig('logging.conf')
+    # logging.config.fileConfig('logging.conf')
     logger = logging.getLogger('shazrobotbot')
     logger.setLevel(logging.INFO)
-    formatter = logging.Formatter('%(asctime)s|%(levelname)s|%(name)s|%(funcName)s|%(message)s')
+    formatter = logging.Formatter(
+        '%(asctime)s|%(levelname)s|%(name)s|%(funcName)s|%(message)s',
+    )
     file_handler = RotatingFileHandler('logging.log', maxBytes=1000*1000)
     file_handler.setLevel(logging.INFO)
     file_handler.setFormatter(formatter)
