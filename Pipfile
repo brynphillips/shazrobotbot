@@ -9,6 +9,7 @@ verify_ssl = true
 twitchio = "*"
 requests = "*"
 httpx = "*"
+spotipy = "*"
 
 
 [requires]
