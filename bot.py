@@ -37,9 +37,9 @@ class Bot(commands.Bot):
     async def event_ready(self):
         'Called once when the bot goes online.'
         print(f'{os.environ["BOT_NICK"]} is online!')
-        # ws = bot._ws  # this is only needed to
+        ws = Bot._ws  # this is only needed to
         # send messages within event_ready
-        # await ws.send_privmsg(os.environ['CHANNEL'], f'/me has landed!')
+        await ws.send_privmsg(os.environ['CHANNEL'], '/me has landed!')
 
     async def event_message(self, ctx):
         'Runs every time a message is sent in chat.'
