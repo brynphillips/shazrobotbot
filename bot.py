@@ -9,8 +9,16 @@ from time import perf_counter
 
 import httpx
 import spotipy
+from flask import Flask
 from spotipy.oauth2 import SpotifyOAuth
 from twitchio.ext import commands
+
+app = Flask(__name__)
+
+
+@app.route('/')
+def hello_world():
+    return 'Hello, World!'
 
 
 class Bot(commands.Bot):
@@ -202,6 +210,8 @@ class Bot(commands.Bot):
         self.logger.info(f'{ctx.author.display_name} used the command.')
         starttime = perf_counter()
         self.counter += 1
+        if self.counter != 2:
+            await ctx.send(f'Needs {2 - self.counter} more people to vote!')
         while self.counter >= 2 and perf_counter()-starttime <= 5:
             self.sp.next_track()
             self.counter = 0
