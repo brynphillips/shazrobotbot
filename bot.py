@@ -9,16 +9,8 @@ from time import perf_counter
 
 import httpx
 import spotipy
-from flask import Flask
 from spotipy.oauth2 import SpotifyOAuth
 from twitchio.ext import commands
-
-app = Flask(__name__)
-
-
-@app.route('/')
-def hello_world():
-    return 'Hello, World!'
 
 
 class Bot(commands.Bot):
@@ -40,6 +32,7 @@ class Bot(commands.Bot):
         self.id = 29998625
         self.name = 'Shazrobot'
         self.logger = logger
+        self.valid_check = validation()
     # bot.py, below bot objects
 
     async def event_ready(self):
@@ -157,8 +150,8 @@ class Bot(commands.Bot):
                 }
 
                 await client.patch(
-                    'https://api.twitch.tv/helix/channels/\
-                    ?broadcaster_id=29998625',
+                    f'https://api.twitch.tv/helix/channels/'
+                    f'?broadcaster_id={self.id}',
                     headers=headers,
                     data={'title': ctx.content.split(' ', 1)[1]},
                 )
@@ -202,6 +195,12 @@ class Bot(commands.Bot):
         self.logger.info(f'{ctx.author.display_name} used the command.')
         followers = await self.get_followers(self.id, count=True)
         await ctx.send(f'{self.name} has {followers} number of follows!')
+
+    @commands.command(name='ban')
+    async def ban(self, ctx):
+        self.logger.info(f'{ctx.author.display_name} used the command.')
+        part = ctx.content.partition(' ')[2].replace('@', '')
+        print(part)
 
 # Spotify commands
 
@@ -260,6 +259,19 @@ def main():
 
     bot = Bot(logger)
     bot.run()
+
+
+async def validation():
+    async with httpx.AsyncClient() as client:
+        headers = {
+            'Authorization': 'OAuth ' + os.environ['OAUTH'],
+        }
+
+        await client.get(
+            'https://id.twitch.tv/oauth2/validate',
+            headers=headers,
+        )
+        print('CHECK')
 
 
 def spotipyinit():

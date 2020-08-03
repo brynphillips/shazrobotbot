@@ -1,2 +1,4 @@
-1. Fix !followage command for '@' and possibly other single characters~~
-        'AndrewLaneX: Put the replace when you assign part'
+#1. Fix !followage command for '@' and possibly other single characters~~
+        #'AndrewLaneX: Put the replace when you assign part'
+
+1. Figure out if I need to use Flask to deploy the bot on Heroku for Spotify integration?

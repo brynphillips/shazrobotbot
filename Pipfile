@@ -10,7 +10,7 @@ twitchio = "*"
 requests = "*"
 httpx = "*"
 spotipy = "*"
-Flask = "*"
+#Flask = "*"
 
 [requires]
 python_version = "3.8"
