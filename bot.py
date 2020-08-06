@@ -141,8 +141,10 @@ class Bot(commands.Bot):
 
     @commands.command(name='title')
     async def title(self, ctx):
-        print(self.auth_check)
-        if self.auth_check:
+        validation_check = self.auth_check
+        print(validation_check)
+        # print(self.auth_check)
+        if validation_check:
             self.logger.info(f'{ctx.author.display_name} used the command.')
             if ctx.author.is_mod:
                 async with httpx.AsyncClient() as client:
