@@ -142,7 +142,7 @@ class Bot(commands.Bot):
     @commands.command(name='title')
     async def title(self, ctx):
         validation_check = self.auth_check
-        print(validation_check)
+        print(inspect.getcoroutinelocals(self.auth_check))
         # print(self.auth_check)
         if validation_check:
             self.logger.info(f'{ctx.author.display_name} used the command.')
