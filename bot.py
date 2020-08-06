@@ -32,7 +32,7 @@ class Bot(commands.Bot):
         self.id = 29998625
         self.name = 'Shazrobot'
         self.logger = logger
-        self.valid_check = validation()
+        self.auth_check = validation()
     # bot.py, below bot objects
 
     async def event_ready(self):
@@ -141,20 +141,22 @@ class Bot(commands.Bot):
 
     @commands.command(name='title')
     async def title(self, ctx):
-        self.logger.info(f'{ctx.author.display_name} used the command.')
-        if ctx.author.is_mod:
-            async with httpx.AsyncClient() as client:
-                headers = {
-                    'Authorization': 'Bearer ' + os.environ['OAUTH'],
-                    'client-id': os.environ['EDITOR_ID'],
-                }
+        print(self.auth_check)
+        if self.auth_check:
+            self.logger.info(f'{ctx.author.display_name} used the command.')
+            if ctx.author.is_mod:
+                async with httpx.AsyncClient() as client:
+                    headers = {
+                        'Authorization': 'Bearer ' + os.environ['OAUTH'],
+                        'client-id': os.environ['EDITOR_ID'],
+                    }
 
-                await client.patch(
-                    f'https://api.twitch.tv/helix/channels/'
-                    f'?broadcaster_id={self.id}',
-                    headers=headers,
-                    data={'title': ctx.content.split(' ', 1)[1]},
-                )
+                    await client.patch(
+                        f'https://api.twitch.tv/helix/channels/'
+                        f'?broadcaster_id={self.id}',
+                        headers=headers,
+                        data={'title': ctx.content.split(' ', 1)[1]},
+                    )
 
     @commands.command(name='motd')
     async def motd(self, ctx):
@@ -262,6 +264,7 @@ def main():
 
 
 async def validation():
+    print('CHECK')
     async with httpx.AsyncClient() as client:
         headers = {
             'Authorization': 'OAuth ' + os.environ['OAUTH'],
@@ -271,7 +274,6 @@ async def validation():
             'https://id.twitch.tv/oauth2/validate',
             headers=headers,
         )
-        print('CHECK')
 
 
 def spotipyinit():
