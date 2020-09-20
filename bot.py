@@ -24,6 +24,10 @@ class Bot(commands.Bot):
             nick=os.environ['BOT_NICK'],
             prefix=os.environ['BOT_PREFIX'],
             initial_channels=[os.environ['CHANNEL']],
+            scopes=[
+                'user:edit:broadcast',
+                'channel:moderate', 'channel_editor',
+            ],
         )
         self.sp = spotipyinit()
         self.counter = 0
@@ -33,11 +37,13 @@ class Bot(commands.Bot):
         self.name = 'Shazrobot'
         self.logger = logger
         self.auth_check = validation()
+        self.http.token = None
     # bot.py, below bot objects
 
     async def event_ready(self):
         'Called once when the bot goes online.'
         print(f'{os.environ["BOT_NICK"]} is online!')
+        await self.http.generate_token()
         ws = self._ws  # this is only needed to
         # send messages within event_ready
         await ws.send_privmsg(os.environ['CHANNEL'], '/me has landed!')
@@ -67,9 +73,23 @@ class Bot(commands.Bot):
     @commands.command(name='so')
     async def so(self, ctx):
         if ctx.author.is_mod:
+            username = ctx.content.split()[1].lstrip('@')
             self.logger.info(f'{ctx.author.display_name} used the command.')
-            await ctx.send(f'You should go check out @{ctx.content[5:]}, \
-            at https://www.twitch.tv/{ctx.content[5:]}')
+            await ctx.send(
+                f'You should go check out {username}'
+                f' at https://www.twitch.tv/{username} !',
+            )
+            # await ctx.send(f'You should go check out @{ctx.content[5:]}, \
+            # at https://www.twitch.tv/{ctx.content[5:]}')
+
+    @commands.command(name='bonk')
+    async def bonk(self, ctx):
+        username = ctx.content.split()[1].lstrip('@')
+        self.logger.info(f'{ctx.author.display_name} used the command.')
+        await ctx.send(
+            f'@{username} '
+            'https://i.fluffy.cc/DM4QqzjR7wCpkGPwTl6zr907X50XgtBL.png',
+        )
 
     @commands.command(name='followage')
     async def followage(self, ctx):
@@ -139,26 +159,15 @@ class Bot(commands.Bot):
         self.logger.info(f'{ctx.author.display_name} used the command.')
         await ctx.send(f'pong {ctx.content[5:]}')
 
-    @commands.command(name='title')
-    async def title(self, ctx):
-        validation_check = self.auth_check
-        print(inspect.getcoroutinelocals(self.auth_check))
-        # print(self.auth_check)
-        if validation_check:
-            self.logger.info(f'{ctx.author.display_name} used the command.')
-            if ctx.author.is_mod:
-                async with httpx.AsyncClient() as client:
-                    headers = {
-                        'Authorization': 'Bearer ' + os.environ['OAUTH'],
-                        'client-id': os.environ['EDITOR_ID'],
-                    }
-
-                    await client.patch(
-                        f'https://api.twitch.tv/helix/channels/'
-                        f'?broadcaster_id={self.id}',
-                        headers=headers,
-                        data={'title': ctx.content.split(' ', 1)[1]},
-                    )
+    # @commands.command(name='title')
+    # async def title(self, ctx):
+    #     self.logger.info(f'{ctx.author.display_name} used the command.')
+    #     if ctx.author.is_mod:
+    #         response = await self.http.request(
+    #             'PATCH',
+    #             '/channels',
+    #             params={'title': ctx.content.split(' ', 1)[1]},
+    #         )
 
     @commands.command(name='motd')
     async def motd(self, ctx):
@@ -200,11 +209,12 @@ class Bot(commands.Bot):
         followers = await self.get_followers(self.id, count=True)
         await ctx.send(f'{self.name} has {followers} number of follows!')
 
-    @commands.command(name='ban')
-    async def ban(self, ctx):
-        self.logger.info(f'{ctx.author.display_name} used the command.')
-        part = ctx.content.partition(' ')[2].replace('@', '')
-        print(part)
+    # Finish this command
+    # @commands.command(name='ban')
+    # async def ban(self, ctx):
+        # self.logger.info(f'{ctx.author.display_name} used the command.')
+        # part = ctx.content.partition(' ')[2].replace('@', '')
+        # print(part)
 
 # Spotify commands
 
@@ -265,17 +275,29 @@ def main():
     bot.run()
 
 
-async def validation():
-    print('CHECK')
-    async with httpx.AsyncClient() as client:
-        headers = {
-            'Authorization': 'OAuth ' + os.environ['OAUTH'],
-        }
+def validation():
+    headers = {
+        'Authorization': 'OAuth ' + os.environ['OAUTH'],
+    }
 
-        await client.get(
-            'https://id.twitch.tv/oauth2/validate',
-            headers=headers,
-        )
+    validated_check = httpx.get(
+        'https://id.twitch.tv/oauth2/validate',
+        headers=headers,
+    )
+
+    return validated_check.text
+
+    # async with httpx.AsyncClient() as client:
+    # print('CHECK')
+    # headers = {
+    # 'Authorization': 'OAuth ' + os.environ['OAUTH'],
+    # }
+
+    # validated_check = await client.get(
+    # 'https://id.twitch.tv/oauth2/validate',
+    # headers=headers,
+    # )
+    # return validated_check
 
 
 def spotipyinit():
